@@ -37,8 +37,6 @@ SOURCES		:=	source
 DATA		:=	data
 INCLUDES	:=	include
 GRAPHICS	:=	gfx
-#ROMFS		:=	romfs
-#GFXBUILD	:=	$(ROMFS)/gfx
 
 #---------------------------------------------------------------------------------
 # options for code generation

@@ -1,6 +1,7 @@
 .vscode
 romfs/gfx
 libsbuild
+lib
 tmplibs
 build
 out
