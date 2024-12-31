@@ -4,7 +4,25 @@ I needed an embedded video player to show a cutscene in a game i'm recreating on
 
 It's not a good library by any means whatsoever, it's a dirty hack/butchering of someone else's work, but for my means and purposes it works. I haven't extensively tested this, I have no idea what it can/can't do, and I formally apologise if this pisses anyone off
 
+## Usage
 
+Honestly, have a look inside main.c, there's a good example on how the 3dsx file works, but here's some extras
+
+```C
+
+ndspInit(); //Make sure you start the ndsp audio engine
+ndspSetCallback(TP_audioCallback, NULL); //Set the audio callback to the video player's
+
+TP_changeFile("romfs:/videos/test.ogg"); //Starts playing the given file AND changes video
+
+//Actually plays the video, this needs to be INSIDE your render loop and inside Citro3d's FrameBegin/FrameEnd all that rendering yap
+if (THEORA_isplaying && THEORA_HasVideo(&THEORA_vidCtx))
+				frameDrawAtCentered(&THEORA_frame, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 0.5f, THEORA_scaleframe, THEORA_scaleframe); 
+
+TP_exitThread(); // Stops playing the video and closes the thread
+
+
+```
 
 ## Preparing the footage
 ### Using a website
@@ -21,9 +39,6 @@ You can change the quality by using the `-q:v` flag. The value can be any interg
 The old 3ds has limited processing power so I do not recomment using 10, but any value between 0 and 7 should be fine. (4 is recommended)
 
 You can also just set the bitrate manually using the `-b:v` flag. (Somewhere around 500k is recomended)
-
-## Usage
-TODO
 
 ## Building
 ### Prerequsites:
