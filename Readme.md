@@ -7,10 +7,10 @@ It's not a good library by any means whatsoever, it's a dirty hack/butchering of
 
 
 ## Preparing the footage
-###Using a website
+### Using a website
 So... I did try using ffmpeg to convert my footage into ogv, but there was always some sort of tiny, slight artefacting or frame issue or something (on the video itself) no matter if i used FFMPEG through the terminal, or if I used VLC's converter function. This isn't an AD but out of desperation I used [https://convertio.co/mp4-ogv/](url), I can't guarantee safety, or privacy using that website and using FFMPEG is definetly the better way of doing this
 
-###Using FFMPEG
+### Using FFMPEG
 You can create a compatible video file using the following command:
 
 `ffmpeg -i 'input.ext' -vcodec theora -vf scale=400:-1 -acodec libvorbis -ar 32000 "output.ogv"`
@@ -22,7 +22,7 @@ You can also just set the bitrate manually using the `-b:v` flag. (Somewhere aro
 
 You can place your generated videos in the `/videos` directory on your sd card, if it doesn't exist, create it.
 
-##Usage
+## Usage
 TODO
 
 ## Building
