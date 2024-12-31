@@ -1,7 +1,16 @@
-# 3ds-Theora example
-POC example of theora decoding for the Nintendo 3DS family of systems using libctru and citro2d.
+# 3ds - Theora video player library
 
-## Usage
+I needed an embedded video player to show a cutscene in a game i'm recreating on the 3DS, I found @oreo639's proof of concept ([https://github.com/oreo639/3ds-theoraplayer](url)) and it turned out to be really helpful
+
+It's not a good library by any means whatsoever, it's a dirty hack/butchering of someone else's work, but for my means and purposes it works. I haven't extensively tested this, I have no idea what it can/can't do, and I formally apologise if this pisses anyone off
+
+
+
+## Preparing the footage
+###Using a website
+So... I did try using ffmpeg to convert my footage into ogv, but there was always some sort of tiny, slight artefacting or frame issue or something (on the video itself) no matter if i used FFMPEG through the terminal, or if I used VLC's converter function. This isn't an AD but out of desperation I used [https://convertio.co/mp4-ogv/](url), I can't guarantee safety, or privacy using that website and using FFMPEG is definetly the better way of doing this
+
+###Using FFMPEG
 You can create a compatible video file using the following command:
 
 `ffmpeg -i 'input.ext' -vcodec theora -vf scale=400:-1 -acodec libvorbis -ar 32000 "output.ogv"`
@@ -13,6 +22,9 @@ You can also just set the bitrate manually using the `-b:v` flag. (Somewhere aro
 
 You can place your generated videos in the `/videos` directory on your sd card, if it doesn't exist, create it.
 
+##Usage
+TODO
+
 ## Building
 ### Prerequsites:
 
@@ -23,6 +35,8 @@ You can place your generated videos in the `/videos` directory on your sd card, 
 ### Compiling:
 
 Once you complete Prerequsites, run `make`.
+
+
 
 ## Copyright
 This software is provided 'as-is', without any express or implied
