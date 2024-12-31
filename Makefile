@@ -35,7 +35,7 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	source
 DATA		:=	data
-INCLUDES	:=	include $(SOURCES)
+INCLUDES	:=	include
 GRAPHICS	:=	gfx
 #ROMFS		:=	romfs
 #GFXBUILD	:=	$(ROMFS)/gfx
@@ -62,7 +62,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -ltheoradec -lvorbisidec -logg -lcitro2d -lcitro3d -lctru -lm
+LIBS	:= -lSDL2_mixer -lSDL2 -ltheoradec -lvorbisidec -logg -lmad -lmikmod -lcitro2d -lcitro3d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
