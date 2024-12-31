@@ -35,7 +35,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
 
 ASFLAGS	:=	-g $(ARCH)
 
-LIBS	:= -lSDL2_mixer -lSDL2 -ltheoradec -lvorbisidec -logg -lcitro2d -lcitro3d -lctru -lm
+LIBS	:= -ltheoradec -lvorbisidec -logg -lcitro2d -lcitro3d -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

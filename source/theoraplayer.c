@@ -1,20 +1,17 @@
 #include "theoraplayer.h"
-#include <SDL/SDL.h>
-#include <SDL/SDL_audio.h>
 
 THEORA_Context THEORA_vidCtx;
 TH3DS_Frame THEORA_frame;
 Thread THEORA_vthread = NULL;
 Thread THEORA_athread = NULL;
-size_t g_bufferSize = 8 * 4096;
+size_t THEORA_buffSize = 8 * 4096;
 ndspWaveBuf THEORA_waveBuf[WAVEBUFCOUNT];
-int16_t *g_audioBuffer;
+int16_t *THEORA_audioBuffer;
 LightEvent THEORA_soundEvent;
 int THEORA_ready = 0;
 float THEORA_scaleframe = 1.0f;
 int THEORA_isplaying = false;
-size_t g_bufferPos = 0;             
-int g_audioChannels = 0;
+
 
 static inline float TP_getFrameScalef(float wi, float hi, float targetw, float targeth)
 {
@@ -23,46 +20,30 @@ static inline float TP_getFrameScalef(float wi, float hi, float targetw, float t
     return fabs(w) > fabs(h) ? h : w;
 }
 
-int audioDevice; // SDL audio device handle
-
-void TP_queueAudio(const int16_t *buffer, size_t size)
-{
-    // Queue the audio data to the SDL audio device
-    if (SDL_QueueAudio(audioDevice, buffer, size * sizeof(int16_t)) < 0)
-    {
-        fprintf(stderr, "Failed to queue audio: %s\n", SDL_GetError());
-    }
-}
 
 void TP_audioInit(THEORA_audioinfo *ainfo)
 {
-    SDL_AudioSpec desiredSpec;
+    ndspChnReset(0);
+    ndspSetOutputMode(NDSP_OUTPUT_STEREO);
+    ndspChnSetInterp(0, ainfo->channels == 2 ? NDSP_INTERP_POLYPHASE : NDSP_INTERP_LINEAR);
+    ndspChnSetRate(0, ainfo->rate);
+    ndspChnSetFormat(0, ainfo->channels == 2 ? NDSP_FORMAT_STEREO_PCM16 : NDSP_FORMAT_MONO_PCM16);
+    THEORA_audioBuffer = linearAlloc((THEORA_buffSize * sizeof(int16_t)) * WAVEBUFCOUNT);
 
-    desiredSpec.freq = ainfo->rate;         // Set the sample rate
-    desiredSpec.format = AUDIO_S16SYS;      // 16-bit signed audio
-    desiredSpec.channels = ainfo->channels; // Mono or Stereo
-    desiredSpec.samples = 4096;             // Buffer size
-    desiredSpec.callback = audioCallback;   // Audio callback function
-    desiredSpec.userdata = NULL;            // No userdata needed
-
-    if (SDL_OpenAudio(&desiredSpec, NULL) < 0)
+    memset(THEORA_waveBuf, 0, sizeof(THEORA_waveBuf));
+    for (unsigned i = 0; i < WAVEBUFCOUNT; ++i)
     {
-        fprintf(stderr, "Failed to open audio: %s\n", SDL_GetError());
-        return;
+        THEORA_waveBuf[i].data_vaddr = &THEORA_audioBuffer[i * THEORA_buffSize];
+        THEORA_waveBuf[i].nsamples = THEORA_buffSize;
+        THEORA_waveBuf[i].status = NDSP_WBUF_DONE;
     }
-
-    // Assign global variables
-    g_audioBuffer = audioBuffer;
-    g_bufferSize = bufferSize;
-    g_bufferPos = 0;
-    g_audioChannels = ainfo->channels;
-
-    SDL_PauseAudio(0); // Start audio playback
 }
 
 void TP_audioClose(void)
 {
-    SDL_CloseAudioDevice(audioDevice);
+    ndspChnReset(0);
+    if (THEORA_audioBuffer)
+        linearFree(THEORA_audioBuffer);
 }
 
 void TP_videoDecode_thread(void *nul)
@@ -100,16 +81,23 @@ void TP_videoDecode_thread(void *nul)
         {
             for (int cur_wvbuf = 0; cur_wvbuf < WAVEBUFCOUNT; cur_wvbuf++)
             {
-                int16_t audioBuffer[g_bufferSize]; // Temporary buffer for decoded audio
-                size_t read = THEORA_readaudio(&THEORA_vidCtx, (char *)audioBuffer, g_bufferSize);
+                ndspWaveBuf *buf = &THEORA_waveBuf[cur_wvbuf];
 
-                if (read > 0)
+                if (buf->status == NDSP_WBUF_DONE)
                 {
-                    TP_queueAudio(audioBuffer, read / sizeof(int16_t)); // Queue the decoded audio
+                    //__lock_acquire(oggMutex);
+                    size_t read = THEORA_readaudio(&THEORA_vidCtx, (char *)buf->data_pcm16, THEORA_buffSize);
+                    //__lock_release(oggMutex);
+                    if (read <= 0)
+                        break;
+                    else if (read <= THEORA_buffSize)
+                        buf->nsamples = read / ainfo->channels;
+
+                    ndspChnWaveBufAdd(0, buf);
                 }
+                DSP_FlushDataCache(buf->data_pcm16, THEORA_buffSize * sizeof(int16_t));
             }
         }
-        SDL_Delay(10);
     }
 
     printf("frames: %d dropped: %d\n", THEORA_vidCtx.frames, THEORA_vidCtx.dropped);
@@ -127,61 +115,14 @@ void TP_videoDecode_thread(void *nul)
 
 void TP_audioCallback(void *const arg_)
 {
-    // (void)arg_;
+    (void)arg_;
 
-    // if (!THEORA_isplaying)
-    //     return;
+    if (!THEORA_isplaying)
+        return;
 
-    // LightEvent_Signal(&THEORA_soundEvent);
-    // Determine how much data is remaining in the buffer
-    size_t remaining = g_bufferSize - g_bufferPos;
-    size_t toCopy = (len > remaining) ? remaining : len;
-
-    // Copy the audio data to the stream
-    SDL_memcpy(stream, (Uint8 *)(g_audioBuffer + g_bufferPos), toCopy);
-
-    // Advance the buffer position
-    g_bufferPos += toCopy / sizeof(int16_t);
-
-    // If there's no more audio, fill the rest with silence
-    if (toCopy < len)
-    {
-        SDL_memset(stream + toCopy, 0, len - toCopy);
-    }
+    LightEvent_Signal(&THEORA_soundEvent);
 }
 
-/*void audioDecode_thread(void* nul) {
-    THEORA_audioinfo* ainfo = THEORA_audinfo(&THEORA_vidCtx);
-
-    if (THEORA_HasAudio(&THEORA_vidCtx))
-        TP_audioInit(ainfo);
-
-    while (THEORA_isplaying) {
-        if (THEORA_HasAudio(&THEORA_vidCtx)) {
-            for (int cur_wvbuf = 0; cur_wvbuf < WAVEBUFCOUNT; cur_wvbuf++) {
-                ndspWaveBuf *buf = &THEORA_waveBuf[cur_wvbuf];
-
-                if(buf->status == NDSP_WBUF_DONE) {
-                    __lock_acquire(oggMutex);
-                    size_t read = THEORA_readaudio(&THEORA_vidCtx, buf->data_pcm16, THEORA_buffSize);
-                    __lock_release(oggMutex);
-                    if(read <= 0)
-                        break;
-                    else if(read <= THEORA_buffSize)
-                        buf->nsamples = read / ainfo->channels;
-
-                    ndspChnWaveBufAdd(0, buf);
-                }
-                DSP_FlushDataCache(buf->data_pcm16, THEORA_buffSize * sizeof(int16_t));
-            }
-            LightEvent_Wait(&THEORA_soundEvent);
-        }
-    }
-
-    //TP_audioClose();
-
-    threadExit(0);
-}*/
 
 void TP_exitThread(void)
 {
@@ -252,5 +193,4 @@ void TP_changeFile(const char *filepath)
     s32 prio;
     svcGetThreadPriority(&prio, CUR_THREAD_HANDLE);
     THEORA_vthread = threadCreate(TP_videoDecode_thread, NULL, 32 * 1024, prio - 1, -1, false);
-    // THEORA_athread = threadCreate(audioDecode_thread, NULL, 32 * 1024, prio-1, -1, false);
 }

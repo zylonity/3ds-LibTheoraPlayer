@@ -18,18 +18,15 @@ extern THEORA_Context THEORA_vidCtx;
 extern TH3DS_Frame THEORA_frame;
 extern Thread THEORA_vthread;
 extern Thread THEORA_athread;
-extern size_t g_bufferSize;
-extern size_t g_bufferPos;
-extern int g_audioChannels;
+extern size_t THEORA_buffSize;
 extern ndspWaveBuf THEORA_waveBuf[WAVEBUFCOUNT];
-extern int16_t *g_audioBuffer;
+extern int16_t *THEORA_audioBuffer;
 extern LightEvent THEORA_soundEvent;
 extern int THEORA_ready;
 extern float THEORA_scaleframe;
 extern int THEORA_isplaying;
 
 
-void TP_queueAudio(const int16_t *buffer, size_t size);
 static inline float TP_getFrameScalef(float wi, float hi, float targetw, float targeth);
 void TP_audioInit(THEORA_audioinfo *ainfo);
 void TP_audioClose(void);
