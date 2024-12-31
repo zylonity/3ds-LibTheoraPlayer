@@ -24,6 +24,10 @@ TP_exitThread(); // Stops playing the video and closes the thread
 
 ```
 
+As a side note, I've been using SDL_Mixer for audio in my game, and I noticed that when the cutscene ended the audio would stop working, you have to make sure to close the audio `Mix_CloseAudio();` before the video plays, and open it again right after.
+
+ONLY CLOSE/OPEN THE MIXER, NOT SDL ITSELF
+
 ## Preparing the footage
 ### Using a website
 So... I did try using ffmpeg to convert my footage into ogv, but there was always some sort of tiny, slight artefacting or frame issue or something (on the video itself) no matter if i used FFMPEG through the terminal, or if I used VLC's converter function.
