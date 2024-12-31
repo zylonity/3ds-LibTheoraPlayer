@@ -1,6 +1,6 @@
 # 3ds - Theora video player library
 
-I needed an embedded video player to show a cutscene in a game i'm recreating on the 3DS, I found [@oreo639]([https://github.com/oreo639/]url)'s proof of concept ([https://github.com/oreo639/3ds-theoraplayer](url)) and it turned out to be really helpful
+I needed an embedded video player to show a cutscene in a game i'm recreating on the 3DS, I found @oreo639's proof of concept ([https://github.com/oreo639/3ds-theoraplayer](url)) and it turned out to be really helpful
 
 It's not a good library by any means whatsoever, it's a dirty hack/butchering of someone else's work, but for my means and purposes it works. I haven't extensively tested this, I have no idea what it can/can't do, and I formally apologise if this pisses anyone off
 
