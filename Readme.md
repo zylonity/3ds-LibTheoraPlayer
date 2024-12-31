@@ -10,7 +10,7 @@ It's not a good library by any means whatsoever, it's a dirty hack/butchering of
 ### Using a website
 So... I did try using ffmpeg to convert my footage into ogv, but there was always some sort of tiny, slight artefacting or frame issue or something (on the video itself) no matter if i used FFMPEG through the terminal, or if I used VLC's converter function.
 
-This isn't an AD but out of desperation I used [https://convertio.co/mp4-ogv/](url), I can't guarantee safety, or privacy using that website and using FFMPEG is definetly the better (open source) way of doing this
+This isn't an AD but out of desperation I used [https://convertio.co/mp4-ogv/](url), I set the video quality to 'Highest', and audio quality to 'High' - I can't guarantee your safety, or privacy using that website and using FFMPEG is definitely the better (open source) way of doing this
 
 ### Using FFMPEG
 You can create a compatible video file using the following command:
@@ -21,8 +21,6 @@ You can change the quality by using the `-q:v` flag. The value can be any interg
 The old 3ds has limited processing power so I do not recomment using 10, but any value between 0 and 7 should be fine. (4 is recommended)
 
 You can also just set the bitrate manually using the `-b:v` flag. (Somewhere around 500k is recomended)
-
-You can place your generated videos in the `/videos` directory on your sd card, if it doesn't exist, create it.
 
 ## Usage
 TODO
@@ -36,8 +34,12 @@ TODO
 
 ### Compiling:
 
-Once you complete Prerequsites, run `make`.
+So there's 2 Makefiles, Makefile_3ds and Makefile_lib. Rename whichever one you need to "Makefile" and then run `make clean` then `make all` 
 
+The 3ds file makes a 3dsx file with part of the original video player, this is so you can test the library with the video player before using the library, you can change the file you access from within main.c
+
+The lib file makes a .a file that EXCLUDES main.c, the way I've been using it is by adding it to my devkitpro's portlibs, I've copied the .a file to `devkitPro\portlibs\3ds\lib` and the files in the include folder to `devkitPro\portlibs\3ds\include`.
+Then from my project's Makefile I add -l3ds-libtheoraplayer (name will change if you change the folder/repo's name after downloading it)
 
 
 ## Copyright
