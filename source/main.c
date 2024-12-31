@@ -42,9 +42,9 @@ int main(int argc, char* argv[]) {
 		if (kDown & KEY_START)
 			break;
 
-		//Starts playing the file, sets the file
+		//Starts playing the file AND sets the file
 		if (!THEORA_isplaying && startedPlaying == false) {
-			TP_changeFile("sdmc:/videos/test.ogg");
+			TP_changeFile("romfs:/videos/test.ogg");
 		}
 		else{
 			startedPlaying = true;
